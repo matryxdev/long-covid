@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LongCovid - Comprendre le COVID Long</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');
+        
+        :root {
+            --primary-color: #6366f1;
+            --primary-light: #818cf8;
+            --primary-glow: rgba(99, 102, 241, 0.7);
+            --secondary-color: #ec4899;
+            --accent-color: #22d3ee;
+            --text-color: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --card-bg: #1e293b;
+            --card-bg-hover: #2d3d57;
+            --gradient-1: linear-gradient(135deg, #6366f1, #ec4899);
+            --gradient-2: linear-gradient(135deg, #4f46e5, #ec4899);
+            --gradient-3: linear-gradient(45deg, #6366f1, #22d3ee);
+            --font-main: 'Syne', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.2);
+            --shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        /* Personnalisation de la barre de défilement */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+    border-radius: 10px;
+    border: 2px solid var(--bg-secondary);
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--primary-light), var(--secondary-color));
+}
+
+/* Support pour Firefox */
+html {
+    scrollbar-color: var(--primary-color) var(--bg-secondary);
+    scrollbar-width: thin;
+}
+
+/* Animation subtile pour la barre de défilement */
+@keyframes glow-scrollbar {
+    0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
+    50% { box-shadow: 0 0 8px rgba(99, 102, 241, 0.5); }
+    100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
+}
+
+::-webkit-scrollbar-thumb {
+    animation: glow-scrollbar 2s infinite;
+}
+        html, body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-secondary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            height: 100%;
+            width: 100%;
+            scroll-behavior: smooth;
+        }
+        
+        /* Loading screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        #loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--primary-color);
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        
+        .loader::after {
+            content: '';  
+            box-sizing: border-box;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-bottom-color: var(--secondary-color);
+        }
+        
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1a2234, #0f172a);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.6s ease;
+            will-change: transform, opacity;
+        }
+
+        #splash-screen.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            font-family: var(--font-main);
+            font-size: 5rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 3rem;
+            letter-spacing: -0.05em;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.4));
+        }
+
+        #virus-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin-bottom: 2.5rem;
+        }
+
+        #virus-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .scroll-hint {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.8;
+            z-index: 10;
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: 50px;
+            background-color: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(5px);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .scroll-hint:hover {
+            transform: translateY(-5px);
+            background-color: rgba(45, 61, 87, 0.5);
+        }
+
+        .scroll-arrow {
+            margin-top: 0.5rem;
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-7px); }
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        #main-content {
+            min-height: 100vh;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            will-change: opacity;
+        }
+
+        #main-content.visible {
+            opacity: 1;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 990;
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--font-main);
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.05em;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 0;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-1);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn:focus {
+            outline: none;
+            box-shadow: var(--shadow-focus);
+        }
+
+        /* Section */
+        .section {
+            padding: 8rem 0 5rem;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: var(--font-main);
+            font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 800;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--gradient-1);
+            border-radius: 10px;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: -2rem auto 4rem;
+        }
+
+        /* Info Cards */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.4s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            background: var(--card-bg-hover);
+        }
+
+        .info-card h3 {
+            font-family: var(--font-main);
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .info-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.8rem;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            flex-grow: 1;
+        }
+
+        .info-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover .info-icon {
+            transform: scale(1.1);
+        }
+
+        .info-image {
+            width: 100%;
+            height: 180px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card:hover .info-image {
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .info-card:hover .info-image img {
+            transform: scale(1.05);
+        }
+        
+        /* Treatments Section */
+        .treatments {
+            background-color: #121e36;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .treatments::before, .treatments::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.07;
+            z-index: -1;
+        }
+        
+        .treatments::before {
+            background: var(--primary-color);
+            top: 10%;
+            left: 5%;
+        }
+        
+        .treatments::after {
+            background: var(--secondary-color);
+            bottom: 10%;
+            right: 5%;
+        }
+        
+        .treatment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+        }
+        
+        .treatment-card {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .treatment-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .treatment-image {
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .treatment-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .treatment-card:hover .treatment-image img {
+            transform: scale(1.1);
+        }
+        
+        .treatment-content {
+            padding: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .treatment-title {
+            font-family: var(--font-main);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            position: relative;
+            display: inline-block;
+            font-weight: 700;
+        }
+        
+        .treatment-card:first-child .treatment-title::before {
+            content: 'Médicale';
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.2rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .treatment-card:last-child .treatment-title::before {
+            content: 'Bien-être';
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.2rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .treatment-text {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.7;
+            flex-grow: 1;
+        }
+        
+        .treatment-points {
+            list-style: none;
+            margin-top: 1rem;
+        }
+        
+        .treatment-points li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .treatment-points li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary-light);
+        }
+        
+        .learn-more {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+            align-self: flex-start;
+        }
+        
+        .learn-more::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .learn-more:hover {
+            color: var(--primary-light);
+        }
+        
+        .learn-more:hover::after {
+            width: 100%;
+        }
+
+        /* Glow effect */
+        .glow-orb {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            opacity: 0.03;
+            filter: blur(120px);
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .glow-orb.secondary {
+            background: var(--secondary-color);
+        }
+        
+        .glow-orb.left {
+            top: 15%;
+            left: -100px;
+        }
+        
+        .glow-orb.right {
+            bottom: 15%;
+            right: -100px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0a0f1c;
+            color: var(--text-secondary);
+            padding: 3rem 0 1.5rem;
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            opacity: 0.3;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-main {
+            max-width: 350px;
+        }
+
+        .footer-main p {
+            margin-top: 1rem;
+            opacity: 0.7;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .footer-links h4 {
+            font-family: var(--font-main);
+            font-size: 1.1rem;
+            color: var(--text-color);
+            margin-bottom: 1.2rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer-links h4::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            width: 30px;
+            height: 2px;
+            background: var(--gradient-1);
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 100;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            opacity: 0.5;
+        }
+
+        /* Media Queries */
+        @media (max-width: 1100px) {
+            .info-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+            
+            .treatment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .section-title {
+                font-size: 3rem;
+            }
+            
+            .splash-logo {
+                font-size: 4rem;
+            }
+            
+            #virus-container {
+                height: 350px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .splash-logo {
+                font-size: 3rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            #virus-container {
+                height: 300px;
+            }
+            
+            .btn {
+                padding: 0.7rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
+            }
+
+            .info-card, .treatment-content {
+                padding: 1.8rem;
+            }
+
+            .info-card h3 {
+                font-size: 1.5rem;
+            }
+
+            .splash-logo {
+                font-size: 2.2rem;
+                margin-bottom: 2rem;
+            }
+            
+            #virus-container {
+                height: 250px;
+            }
+            
+            .container {
+                padding: 0 1.5rem;
+            }
+            
+            .back-to-top {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <span class="loader"></span>
+    </div>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="splash-logo">LongCovid</div>
+        <div id="virus-container">
+            <canvas id="virus-canvas"></canvas>
+        </div>
+        <div class="scroll-hint">
+            <span>Défiler pour découvrir</span>
+            <div class="scroll-arrow">↓</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <!-- Header -->
+        <header>
+            <div class="container">
+                <nav>
+                    <div class="logo">Long<span>Covid</span></div>
+                    <div class="nav-links">
+                        <a href="#about">Définition</a>
+                        <a href="#treatments">Traitements</a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <!-- About Section -->
+        <section class="section" id="about">
+            <div class="glow-orb left"></div>
+            <div class="glow-orb secondary right"></div>
+            <div class="container">
+                <h2 class="section-title">Comprendre le COVID Long</h2>
+                <p class="section-subtitle">Le COVID Long est une condition qui affecte environ 10-30% des personnes infectées par le SARS-CoV-2, se manifestant par des symptômes persistants malgré la disparition de l'infection aiguë.</p>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-icon">🔍</div>
+                        <h3>Définition</h3>
+                        <p>
+                            Le COVID Long désigne un ensemble de symptômes qui persistent pendant des mois voir des années après l'infection initiale au COVID-19, généralement au-delà de 12 semaines après le début de la maladie.
+                        </p>
+                        <div class="info-image">
+                            <img src="https://images.unsplash.com/photo-1584483766114-2cea6facdf57?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHZpcnVzfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Illustration du virus COVID-19">
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">🧬</div>
+                        <h3>Causes</h3>
+                        <p>
+                            Les recherches suggèrent plusieurs mécanismes, notamment la persistance du virus dans certains tissus, le dérèglement du système immunitaire, des microthrombus affectant l'oxygénation, et des dommages tissulaires suite à l'infection initiale.
+                        </p>
+                        <div class="info-image">
+                            <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1tdW5lJTIwc3lzdGVtfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Cellules du système immunitaire">
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">⚡</div>
+                        <h3>Symptômes</h3>
+                        <p>
+                            Les patients atteints du COVID Long présentent souvent de la fatigue, un brouillard mental, des difficultés respiratoires, des palpitations cardiaques et des douleurs articulaires. Le malaise post-effort, où les symptômes s'aggravent après une activité physique ou mentale, est également fréquent.
+                        </p>
+                        <div class="info-image">
+                            <img src="https://emblemhealth.scene7.com/is/image/emblemhealth/Stress%20Blog?ts=1720686897498&dpr=off" alt="Personne souffrant de fatigue">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Treatments Section -->
+        <section class="section treatments" id="treatments">
+            <div class="container">
+                <h2 class="section-title">Approches Thérapeutiques</h2>
+                <p class="section-subtitle">Bien qu'il n'existe pas encore de traitement spécifique pour le COVID Long, plusieurs approches sont utilisées pour gérer les symptômes et améliorer la qualité de vie des patients.</p>
+                <div class="treatment-grid">
+                    <div class="treatment-card">
+                        <div class="treatment-image">
+                            <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Approche médicale">
+                        </div>
+                        <div class="treatment-content">
+                            <h3 class="treatment-title">Approche Médicale</h3>
+                            <p class="treatment-text">Les médecins adoptent généralement une approche multidisciplinaire pour traiter les symptômes spécifiques du COVID Long. Des spécialistes de différents domaines collaborent pour offrir des soins personnalisés.</p>
+                            <ul class="treatment-points">
+                                <li>Cardiologues pour les problèmes de rythme cardiaque</li>
+                                <li>Pneumologues pour les difficultés respiratoires</li>
+                                <li>Neurologues pour le brouillard mental et les problèmes cognitifs</li>
+                                <li>Programmes de réadaptation spécialisés</li>
+                                <li>Médicaments pour la gestion des symptômes spécifiques</li>
+                            </ul>
+         
+                        </div>
+                    </div>
+                    
+                    <div class="treatment-card">
+                        <div class="treatment-image">
+                            <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=920&q=80" alt="Approches complémentaires">
+                        </div>
+                        <div class="treatment-content">
+                            <h3 class="treatment-title">Approches de Bien-être</h3>
+                            <p class="treatment-text">De nombreux patients trouvent un soulagement dans des approches complémentaires qui, associées aux soins médicaux, peuvent améliorer leur qualité de vie et favoriser le rétablissement.</p>
+                            <ul class="treatment-points">
+                                <li>Rythme d'activité adapté (pacing) pour gérer l'énergie</li>
+                                <li>Techniques de respiration et méditation</li>
+                                <li>Nutrition ciblée anti-inflammatoire</li>
+                                <li>Physiothérapie et exercices doux adaptés</li>
+                                <li>Groupes de soutien entre patients</li>
+                            </ul>
+                 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Back to top button -->
+        <div class="back-to-top">↑</div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-main">
+                        <div class="logo">Long<span>Covid</span></div>
+                        <p>Une ressource éducative fournissant des informations sur les effets à long terme de l'infection au COVID-19.</p>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Liens Rapides</h4>
+                        <ul>
+                            <li><a href="#about">Qu'est-ce que le COVID Long ?</a></li>
+                            <li><a href="#treatments">Approches Thérapeutiques</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Ressources</h4>
+                        <ul>
+                            <li><a href="https://www.ncbi.nlm.nih.gov/pmc/?term=long+covid" target="_blank">Recherches Récentes</a></li>
+                            <li><a href="https://longcovidfamilies.org/" target="_blank">Groupes de Soutien</a></li>
+    
+                        </ul>
+                    </div>
+                </div>
+                <div class="copyright">
+                    <p>&copy; 2025 LongCovid Portail d'Information. Toutes les informations fournies sont uniquement à titre éducatif.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Références aux éléments DOM
+        const loadingScreen = document.getElementById('loading-screen');
+        const splashScreen = document.getElementById('splash-screen');
+        const mainContent = document.getElementById('main-content');
+        const scrollHint = document.querySelector('.scroll-hint');
+        const backToTopBtn = document.querySelector('.back-to-top');
+        
+        // Afficher l'écran de chargement initialement
+        loadingScreen.classList.remove('hidden');
+        
+        // Initialiser le modèle 3D du virus simplifié
+        function initVirusModel() {
+            const canvas = document.getElementById('virus-canvas');
+            if (!canvas) return;
+            
+            const renderer = new THREE.WebGLRenderer({
+                canvas,
+                antialias: true,
+                alpha: true,
+                powerPreference: 'high-performance'
+            });
+            
+            // Définir la taille en fonction du conteneur
+            const container = document.getElementById('virus-container');
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            const scene = new THREE.Scene();
+            
+            const camera = new THREE.PerspectiveCamera(70, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 4;
+            
+            // Éclairage simplifié
+            const ambientLight = new THREE.AmbientLight(0x6366f1, 0.4);
+            scene.add(ambientLight);
+            
+            const pointLight = new THREE.PointLight(0x6366f1, 2, 50);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+            
+            // Créer le modèle du virus - simplifié pour de meilleures performances
+            const virusGroup = new THREE.Group();
+            scene.add(virusGroup);
+            
+            // Sphère principale
+            const mainGeometry = new THREE.SphereGeometry(1.2, 32, 32); // Nombre de polygones réduit
+            const mainMaterial = new THREE.MeshPhongMaterial({ // MeshPhongMaterial est moins gourmand en ressources
+                color: 0x6366f1,
+                shininess: 70,
+                emissive: 0x6366f1,
+                emissiveIntensity: 0.2
+            });
+            const mainSphere = new THREE.Mesh(mainGeometry, mainMaterial);
+            virusGroup.add(mainSphere);
+            
+            // Ajouter moins de pics pour de meilleures performances
+            const spikeGeometry = new THREE.ConeGeometry(0.15, 0.6, 8); // Nombre de polygones réduit
+            const spikeMaterial = new THREE.MeshPhongMaterial({
+                color: 0xec4899,
+                shininess: 50,
+                emissive: 0xec4899,
+                emissiveIntensity: 0.3
+            });
+            
+            // Ajouter des pics de protéine - en nombre réduit
+            for (let i = 0; i < 20; i++) {
+                const spike = new THREE.Mesh(spikeGeometry, spikeMaterial);
+                
+                const phi = Math.acos(-1 + (2 * i) / 20);
+                const theta = Math.sqrt(20 * Math.PI) * phi;
+                
+                spike.position.setFromSphericalCoords(1.2, phi, theta);
+                spike.lookAt(spike.position.clone().multiplyScalar(2));
+                
+                const scale = 0.7 + Math.random() * 0.5;
+                spike.scale.set(scale, scale, scale);
+                
+                virusGroup.add(spike);
+            }
+            
+            // Boucle d'animation
+            let frameCount = 0;
+            let animationFrameId;
+            
+            const animate = () => {
+                animationFrameId = requestAnimationFrame(animate);
+                
+                frameCount += 0.01;
+                
+                // Animation simplifiée
+                virusGroup.rotation.y = frameCount * 0.3;
+                virusGroup.rotation.x = Math.sin(frameCount * 0.1) * 0.1;
+                
+                renderer.render(scene, camera);
+            };
+            
+            // Démarrage contrôlé de l'animation
+            animate();
+            
+            // Gestion du redimensionnement - version simplifiée
+            const handleResize = () => {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            };
+            
+            window.addEventListener('resize', handleResize);
+            
+            // Fonction de nettoyage pour améliorer les performances lorsque le modèle n'est pas visible
+            const cleanup = () => {
+                cancelAnimationFrame(animationFrameId);
+                window.removeEventListener('resize', handleResize);
+                
+                // Libérer les ressources
+                mainGeometry.dispose();
+                mainMaterial.dispose();
+                spikeGeometry.dispose();
+                spikeMaterial.dispose();
+                renderer.dispose();
+            };
+            
+            return { animate, cleanup };
+        }
+        
+        // Gestion du chargement initial
+        window.addEventListener('load', () => {
+            // Masquer l'écran de chargement
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+            }, 800); // Court délai pour une transition plus fluide
+            
+            // Initialiser le modèle 3D
+            const virusModel = initVirusModel();
+            
+            // Gestion de la disparition de l'écran d'accueil
+            function hideSplashScreen() {
+                splashScreen.classList.add('hidden');
+                mainContent.classList.add('visible');
+                
+                // Arrêter l'animation du virus après la transition pour économiser les ressources
+                setTimeout(() => {
+                    if (virusModel && virusModel.cleanup) {
+                        virusModel.cleanup();
+                    }
+                }, 1000);
+                
+                // Supprimer les écouteurs d'événements
+                window.removeEventListener('wheel', hideSplashScreen);
+                window.removeEventListener('touchmove', hideSplashScreen);
+                window.removeEventListener('keydown', handleKeyDown);
+                scrollHint.removeEventListener('click', hideSplashScreen);
+            }
+            
+            function handleKeyDown(e) {
+                // Espace, Page Suivante, Flèche Bas, Fin
+                if ([32, 34, 40, 35].includes(e.keyCode)) {
+                    hideSplashScreen();
+                }
+            }
+            
+            // Ajouter des écouteurs d'événements pour la disparition de l'écran d'accueil
+            window.addEventListener('wheel', hideSplashScreen, { passive: true });
+            window.addEventListener('touchmove', hideSplashScreen, { passive: true });
+            window.addEventListener('keydown', handleKeyDown);
+            scrollHint.addEventListener('click', hideSplashScreen);
+            
+
+            
+            // Gérer le bouton de retour en haut
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 500) {
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            });
+            
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    });
+    </script>
+</body>
+</html>
