@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');
         
@@ -738,6 +737,7 @@
             transform: translateY(50px);
             transform-style: preserve-3d;
             perspective: 1000px;
+            will-change: transform;
         }
         
         .info-card.reveal {
@@ -749,8 +749,27 @@
         .info-card:nth-child(2).reveal { transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s, box-shadow 0.4s ease, background-color 0.4s ease; }
         .info-card:nth-child(3).reveal { transition: opacity 0.6s ease 0.5s, transform 0.6s ease 0.5s, box-shadow 0.4s ease, background-color 0.4s ease; }
 
+        /* Card Hover Effect */
+        .card-hover-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 20px;
+            z-index: -1;
+        }
+        
+        .info-card:hover .card-hover-effect,
+        .treatment-card:hover .card-hover-effect {
+            opacity: 0.07;
+        }
+        
         .info-card:hover {
-            transform: translateY(-10px) translateZ(10px);
+            transform: translateY(-10px);
             box-shadow: var(--shadow-lg), 0 0 20px rgba(99, 102, 241, 0.3);
             background: var(--card-bg-hover);
         }
@@ -829,7 +848,7 @@
         }
 
         .info-card:hover .info-image {
-            transform: translateZ(20px);
+            transform: translateY(2px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 15px rgba(99, 102, 241, 0.3);
         }
 
@@ -896,6 +915,7 @@
             position: relative;
             opacity: 0;
             transform: translateY(30px) rotateX(10deg);
+            will-change: transform;
         }
         
         .treatment-card.reveal {
@@ -907,25 +927,8 @@
         .treatment-card:last-child.reveal { transition: opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s, box-shadow 0.3s ease; }
         
         .treatment-card:hover {
-            transform: translateY(-15px) scale(1.02) rotateX(5deg);
+            transform: translateY(-15px);
             box-shadow: var(--shadow-lg), 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 15px rgba(99, 102, 241, 0.2);
-        }
-        
-        .treatment-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            opacity: 0;
-            z-index: -1;
-            transition: opacity 0.3s ease;
-        }
-        
-        .treatment-card:hover::before {
-            opacity: 0.1;
         }
         
         .treatment-image {
@@ -958,7 +961,7 @@
         }
         
         .treatment-card:hover .treatment-image img {
-            transform: scale(1.15) translateZ(20px);
+            transform: scale(1.15);
         }
         
         .treatment-content {
@@ -971,7 +974,7 @@
         }
         
         .treatment-card:hover .treatment-content {
-            transform: translateZ(30px);
+            transform: translateY(-5px);
         }
         
         .treatment-title {
@@ -1063,7 +1066,6 @@
         
         .treatment-card:hover .treatment-points li {
             color: var(--text-color);
-            transform: translateZ(5px);
             opacity: 1;
         }
         
@@ -1650,8 +1652,8 @@
 
         <!-- Mobile Menu -->
         <div class="mobile-menu">
-            <a href="#about">Définition</a>
-            <a href="#treatments">Traitements</a>
+            <a href="#about" class="mobile-link">Définition</a>
+            <a href="#treatments" class="mobile-link">Traitements</a>
         </div>
         <div class="overlay"></div>
 
@@ -1664,7 +1666,8 @@
                     <h2 class="section-title">Comprendre le COVID Long</h2>
                     <p class="section-subtitle">Le COVID Long est une condition qui affecte environ 10-30% des personnes infectées par le SARS-CoV-2, se manifestant par des symptômes persistants malgré la disparition de l'infection aiguë.</p>
                     <div class="info-grid">
-                        <div class="info-card tilt-element">
+                        <div class="info-card">
+                            <div class="card-hover-effect"></div>
                             <div class="info-icon">🔍</div>
                             <h3>Définition</h3>
                             <p>
@@ -1674,7 +1677,8 @@
                                 <img src="https://images.unsplash.com/photo-1584483766114-2cea6facdf57?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHZpcnVzfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Illustration du virus COVID-19">
                             </div>
                         </div>
-                        <div class="info-card tilt-element">
+                        <div class="info-card">
+                            <div class="card-hover-effect"></div>
                             <div class="info-icon">🧬</div>
                             <h3>Causes</h3>
                             <p>
@@ -1684,7 +1688,8 @@
                                 <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1tdW5lJTIwc3lzdGVtfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Cellules du système immunitaire">
                             </div>
                         </div>
-                        <div class="info-card tilt-element">
+                        <div class="info-card">
+                            <div class="card-hover-effect"></div>
                             <div class="info-icon">⚡</div>
                             <h3>Symptômes</h3>
                             <p>
@@ -1707,6 +1712,7 @@
                     <p class="section-subtitle">Bien qu'il n'existe pas encore de traitement spécifique pour le COVID Long, plusieurs approches sont utilisées pour gérer les symptômes et améliorer la qualité de vie des patients.</p>
                     <div class="treatment-grid">
                         <div class="treatment-card">
+                            <div class="card-hover-effect"></div>
                             <div class="treatment-image">
                                 <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Approche médicale">
                             </div>
@@ -1724,6 +1730,7 @@
                         </div>
                         
                         <div class="treatment-card">
+                            <div class="card-hover-effect"></div>
                             <div class="treatment-image">
                                 <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=920&q=80" alt="Approches complémentaires">
                             </div>
@@ -1777,7 +1784,6 @@
         </footer>
     </div>
     
-    <!-- Script for particles background -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Références aux éléments DOM
@@ -1789,7 +1795,7 @@
         const hamburger = document.querySelector('.hamburger');
         const mobileMenu = document.querySelector('.mobile-menu');
         const overlay = document.querySelector('.overlay');
-        const mobileLinks = document.querySelectorAll('.mobile-menu a');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
         const header = document.querySelector('header');
         const sectionTitles = document.querySelectorAll('.section-title');
         const sectionSubtitles = document.querySelectorAll('.section-subtitle');
@@ -1873,28 +1879,73 @@
             animateParticles();
         }
         
-        // Initialisation des effets 3D pour les cartes
-        function initTiltEffect() {
+        // Initialisation des effets 3D personnalisés pour les cartes
+        initCardEffects();
+        
+        // Effet 3D personnalisé pour les cartes (plus performant que VanillaTilt)
+        function initCardEffects() {
             if (isLowPower || prefersReducedMotion) return;
             
-            const tiltOptions = {
-                max: 15,
-                scale: 1.03,
-                speed: 1000,
-                glare: true,
-                "max-glare": 0.2
-            };
+            const cards = document.querySelectorAll('.info-card, .treatment-card');
             
-            // Appliquer l'effet de tilt uniquement sur les grands écrans
-            if (window.innerWidth > 768) {
-                document.querySelectorAll('.tilt-element').forEach(card => {
-                    VanillaTilt.init(card, tiltOptions);
+            cards.forEach(card => {
+                // Variables pour l'effet hover 3D
+                let rect, centerX, centerY;
+                const maxRotation = 8; // degrés maximum de rotation
+                
+                // Calculer les dimensions et le centre de la carte au survol
+                card.addEventListener('mouseenter', () => {
+                    rect = card.getBoundingClientRect();
+                    centerX = rect.left + rect.width / 2;
+                    centerY = rect.top + rect.height / 2;
+                    
+                    card.style.transition = 'transform 0.1s ease';
                 });
-            }
+                
+                // Effet de rotation basé sur la position de la souris
+                card.addEventListener('mousemove', e => {
+                    if (!rect) return;
+                    
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+                    
+                    // Calculer la distance par rapport au centre en pourcentage
+                    const percentX = (mouseX - centerX) / (rect.width / 2);
+                    const percentY = (mouseY - centerY) / (rect.height / 2);
+                    
+                    // Appliquer la rotation (inversée pour un effet naturel)
+                    const rotateY = percentX * -maxRotation;
+                    const rotateX = percentY * maxRotation;
+                    
+                    // Appliquer la transformation avec requestAnimationFrame pour optimiser les performances
+                    requestAnimationFrame(() => {
+                        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+                        
+                        // Effet de lueur dynamique basé sur la position de la souris
+                        const glowX = 50 + percentX * 50; // 0-100%
+                        const glowY = 50 + percentY * 50; // 0-100%
+                        
+                        // Appliquer l'effet de lueur dynamique
+                        const hoverEffect = card.querySelector('.card-hover-effect');
+                        if (hoverEffect) {
+                            hoverEffect.style.background = `radial-gradient(circle at ${glowX}% ${glowY}%, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.05))`;
+                        }
+                    });
+                });
+                
+                // Réinitialiser la transformation au départ
+                card.addEventListener('mouseleave', () => {
+                    card.style.transition = 'transform 0.3s ease';
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+                    
+                    // Réinitialiser l'effet de lueur
+                    const hoverEffect = card.querySelector('.card-hover-effect');
+                    if (hoverEffect) {
+                        hoverEffect.style.background = '';
+                    }
+                });
+            });
         }
-        
-        // Afficher l'écran de chargement initialement
-        loadingScreen.classList.remove('hidden');
         
         // Fonction pour le menu mobile
         function toggleMobileMenu() {
@@ -1907,25 +1958,30 @@
         hamburger.addEventListener('click', toggleMobileMenu);
         overlay.addEventListener('click', toggleMobileMenu);
         
-        // Fermer le menu en cliquant sur un lien
+        // Navigation vers les sections depuis le menu mobile - CORRIGÉ
         mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                // Fermer le menu mobile
                 toggleMobileMenu();
                 
-                // Permettre au scroll de se produire après la fermeture du menu
+                // Attendre que l'animation de fermeture soit terminée
                 setTimeout(() => {
-                    const targetId = link.getAttribute('href');
-                    const targetElement = document.querySelector(targetId);
                     if (targetElement) {
                         const headerHeight = document.querySelector('header').offsetHeight;
                         const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
                         
+                        // Faire défiler la page vers la section cible
                         window.scrollTo({
                             top: targetPosition,
                             behavior: 'smooth'
                         });
                     }
-                }, 300);
+                }, 500); // Augmenté à 500ms pour s'assurer que l'animation de fermeture du menu est terminée
             });
         });
         
@@ -2236,9 +2292,6 @@
             // Initialiser le modèle 3D amélioré
             const virusModel = initEnhancedVirusModel();
             
-            // Initialiser les effets de carte 3D
-            initTiltEffect();
-            
             // Initialiser les animations de défilement
             initScrollAnimations();
             
@@ -2297,7 +2350,7 @@
         });
         
         // Navigation fluide pour les liens internes
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        document.querySelectorAll('a[href^="#"]:not(.mobile-link)').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 
