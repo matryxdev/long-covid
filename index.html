@@ -6,8 +6,198 @@
     <title>LongCovid - Comprendre le COVID Long</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.159.0/three.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
     <style>
+        @media (max-width: 1100px) {
+    .info-grid, .treatment-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+    
+    .virus-particle {
+        display: none;
+    }
+}
+
+@media (max-width: 992px) {
+    .nav-links {
+        display: none;
+    }
+    
+    .hamburger {
+        display: block;
+    }
+    
+    .section-title {
+        font-size: clamp(1.8rem, 5vw, 3rem);
+    }
+    
+    #virus-container {
+        height: 350px;
+    }
+    
+    .bg-orb {
+        opacity: 0.1;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 1.5rem;
+    }
+    
+    .section {
+        padding: 6rem 0 3rem;
+    }
+    
+    .section-subtitle {
+        margin: -1.5rem auto 3rem;
+    }
+    
+    .info-card, .treatment-content {
+        padding: 2rem;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    #virus-container {
+        height: 300px;
+    }
+    
+    .btn {
+        padding: 0.7rem 1.5rem;
+    }
+    
+    .treatment-title::before {
+        top: -35px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .info-card h3 {
+        font-size: 1.6rem;
+    }
+    
+    .info-card p, .treatment-text {
+        font-size: 0.95rem;
+    }
+    
+    .treatment-points li {
+        font-size: 0.9rem;
+    }
+    
+    #virus-container {
+        height: 250px;
+    }
+    
+    .back-to-top {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .loader-3d-container {
+        width: 120px;
+        height: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-card, .treatment-content {
+        padding: 1.5rem;
+    }
+    
+    .info-image {
+        height: 150px;
+    }
+    
+    .treatment-image {
+        height: 180px;
+    }
+    
+    .section {
+        padding: 5rem 0 2rem;
+    }
+    
+    #virus-container {
+        height: 220px;
+    }
+    
+    .scroll-hint {
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    .scroll-arrow {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .logo {
+        font-size: 1.8rem;
+    }
+    
+    .mobile-menu {
+        width: 100%;
+    }
+    
+    #virus-container {
+        height: 200px;
+    }
+}
+
+/* Fix pour l'affichage sur petits appareils */
+@media (max-height: 600px) {
+    .splash-logo {
+        margin-bottom: 1.5rem;
+    }
+    
+    #virus-container {
+        height: 180px;
+        margin-bottom: 1rem;
+    }
+    
+    .scroll-hint {
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* Optimisation pour appareils à haute densité de pixels */
+@media 
+(-webkit-min-device-pixel-ratio: 2), 
+(min-resolution: 192dpi) {
+    .info-image img, .treatment-image img {
+        transform: scale(1);
+    }
+}
+
+/* Pour désactiver certaines animations sur les appareils qui préfèrent le mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .info-card, .treatment-card, .section-title, .section-subtitle {
+        transition: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+    
+    .virus-particle, .bg-orb {
+        display: none !important;
+    }
+}
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');
         
         :root {
@@ -20,8 +210,8 @@
             --text-secondary: #94a3b8;
             --bg-color: #0f172a;
             --bg-secondary: #1e293b;
-            --card-bg: rgba(30, 41, 59, 0.8);
-            --card-bg-hover: rgba(45, 61, 87, 0.85);
+            --card-bg: #1e293b;
+            --card-bg-hover: #2d3d57;
             --gradient-1: linear-gradient(135deg, #6366f1, #ec4899);
             --gradient-2: linear-gradient(135deg, #4f46e5, #ec4899);
             --gradient-3: linear-gradient(45deg, #6366f1, #22d3ee);
@@ -31,7 +221,6 @@
             --shadow-md: 0 10px 15px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.2);
             --shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.3);
-            --shadow-neon: 0 0 15px var(--primary-glow);
         }
 
         * {
@@ -39,45 +228,43 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
         /* Personnalisation de la barre de défilement */
-        ::-webkit-scrollbar {
-            width: 12px;
-        }
+::-webkit-scrollbar {
+    width: 12px;
+}
 
-        ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
-            border-radius: 10px;
-        }
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
 
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
-            border-radius: 10px;
-            border: 2px solid var(--bg-secondary);
-            transition: all 0.3s ease;
-        }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+    border-radius: 10px;
+    border: 2px solid var(--bg-secondary);
+    transition: all 0.3s ease;
+}
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, var(--primary-light), var(--secondary-color));
-        }
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--primary-light), var(--secondary-color));
+}
 
-        /* Support pour Firefox */
-        html {
-            scrollbar-color: var(--primary-color) var(--bg-secondary);
-            scrollbar-width: thin;
-        }
+/* Support pour Firefox */
+html {
+    scrollbar-color: var(--primary-color) var(--bg-secondary);
+    scrollbar-width: thin;
+}
 
-        /* Animation subtile pour la barre de défilement */
-        @keyframes glow-scrollbar {
-            0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
-            50% { box-shadow: 0 0 8px rgba(99, 102, 241, 0.5); }
-            100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
-        }
+/* Animation subtile pour la barre de défilement */
+@keyframes glow-scrollbar {
+    0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
+    50% { box-shadow: 0 0 8px rgba(99, 102, 241, 0.5); }
+    100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
+}
 
-        ::-webkit-scrollbar-thumb {
-            animation: glow-scrollbar 2s infinite;
-        }
-        
+::-webkit-scrollbar-thumb {
+    animation: glow-scrollbar 2s infinite;
+}
         html, body {
             background-color: var(--bg-color);
             color: var(--text-color);
@@ -87,7 +274,6 @@
             height: 100%;
             width: 100%;
             scroll-behavior: smooth;
-            perspective: 1000px;
         }
         
         /* Loading screen */
@@ -110,93 +296,38 @@
             visibility: hidden;
         }
         
-        /* Loader 3D */
-        .loader-3d-container {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            perspective: 800px;
-        }
-        
-        .loader-3d {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            animation: loader-rotate 2.5s infinite linear;
-        }
-        
-        .loader-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 3px solid;
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--primary-color);
             border-radius: 50%;
-            backface-visibility: visible;
+            display: inline-block;
+            position: relative;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
         }
         
-        .loader-face:nth-child(1) {
-            border-color: var(--primary-color);
-            transform: translateZ(0px);
-            animation: pulse-primary 1.5s infinite alternate;
+        .loader::after {
+            content: '';  
+            box-sizing: border-box;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-bottom-color: var(--secondary-color);
         }
         
-        .loader-face:nth-child(2) {
-            border-color: var(--secondary-color);
-            transform: rotateY(90deg) translateZ(75px);
-            animation: pulse-secondary 1.5s infinite alternate 0.5s;
-        }
-        
-        .loader-face:nth-child(3) {
-            border-color: var(--accent-color);
-            transform: rotateY(180deg) translateZ(0px);
-            animation: pulse-accent 1.5s infinite alternate 1s;
-        }
-        
-        .loader-face:nth-child(4) {
-            border-color: var(--primary-light);
-            transform: rotateY(270deg) translateZ(75px);
-            animation: pulse-primary-light 1.5s infinite alternate 1.5s;
-        }
-        
-        @keyframes loader-rotate {
+        @keyframes rotation {
             0% {
-                transform: rotateY(0deg) rotateX(0deg);
-            }
-            50% {
-                transform: rotateY(180deg) rotateX(90deg);
+                transform: rotate(0deg);
             }
             100% {
-                transform: rotateY(360deg) rotateX(0deg);
+                transform: rotate(360deg);
             }
-        }
-        
-        @keyframes pulse-primary {
-            to { box-shadow: 0 0 20px var(--primary-color); transform: translateZ(0px) scale(1.05); }
-        }
-        
-        @keyframes pulse-secondary {
-            to { box-shadow: 0 0 20px var(--secondary-color); transform: rotateY(90deg) translateZ(75px) scale(1.05); }
-        }
-        
-        @keyframes pulse-accent {
-            to { box-shadow: 0 0 20px var(--accent-color); transform: rotateY(180deg) translateZ(0px) scale(1.05); }
-        }
-        
-        @keyframes pulse-primary-light {
-            to { box-shadow: 0 0 20px var(--primary-light); transform: rotateY(270deg) translateZ(75px) scale(1.05); }
-        }
-
-        /* Particles background */
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            opacity: 0.4;
-            pointer-events: none;
         }
 
         /* Splash Screen */
@@ -212,9 +343,8 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            transition: transform 0.8s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.8s ease;
+            transition: transform 0.6s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.6s ease;
             will-change: transform, opacity;
-            overflow: hidden;
         }
 
         #splash-screen.hidden {
@@ -225,7 +355,7 @@
 
         .splash-logo {
             font-family: var(--font-main);
-            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-size: 5rem;
             font-weight: 800;
             background: var(--gradient-1);
             -webkit-background-clip: text;
@@ -237,30 +367,6 @@
             position: relative;
             z-index: 10;
             filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.4));
-            transform-style: preserve-3d;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .splash-logo::after {
-            content: 'LongCovid';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--gradient-3);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            filter: blur(15px);
-            opacity: 0.5;
-            z-index: -1;
-            transform: translateZ(-20px);
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotateX(0deg); }
-            50% { transform: translateY(-15px) rotateX(5deg); }
         }
 
         #virus-container {
@@ -269,8 +375,6 @@
             max-width: 600px;
             height: 400px;
             margin-bottom: 2.5rem;
-            padding: 0 1rem;
-            perspective: 1000px;
         }
 
         #virus-canvas {
@@ -279,55 +383,6 @@
             left: 0;
             width: 100%;
             height: 100%;
-            transform-style: preserve-3d;
-        }
-        
-        /* Background effects */
-        .bg-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.15;
-            pointer-events: none;
-            z-index: -1;
-            animation: orbit 20s infinite linear;
-        }
-        
-        .bg-orb.primary {
-            background: var(--primary-color);
-            width: 30vw;
-            height: 30vw;
-            top: -10%;
-            left: -5%;
-            animation-duration: 25s;
-        }
-        
-        .bg-orb.secondary {
-            background: var(--secondary-color);
-            width: 25vw;
-            height: 25vw;
-            bottom: 10%;
-            right: -5%;
-            animation-duration: 30s;
-            animation-direction: reverse;
-        }
-        
-        .bg-orb.accent {
-            background: var(--accent-color);
-            width: 20vw;
-            height: 20vw;
-            bottom: 30%;
-            left: 10%;
-            animation-duration: 35s;
-            animation-delay: 5s;
-        }
-        
-        @keyframes orbit {
-            0% { transform: translateX(0) translateY(0); }
-            25% { transform: translateX(3vw) translateY(2vw); }
-            50% { transform: translateX(0) translateY(4vw); }
-            75% { transform: translateX(-3vw) translateY(2vw); }
-            100% { transform: translateX(0) translateY(0); }
         }
 
         .scroll-hint {
@@ -344,19 +399,12 @@
             background-color: rgba(30, 41, 59, 0.5);
             backdrop-filter: blur(5px);
             box-shadow: var(--shadow-sm);
-            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-            animation: pulse-glow 3s infinite alternate;
-        }
-        
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); }
-            100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.7); }
+            transition: transform 0.3s ease, background-color 0.3s ease;
         }
         
         .scroll-hint:hover {
             transform: translateY(-5px);
             background-color: rgba(45, 61, 87, 0.5);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
         }
 
         .scroll-arrow {
@@ -376,9 +424,6 @@
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 2rem;
-            width: 100%;
-            position: relative;
-            z-index: 5;
         }
 
         #main-content {
@@ -386,7 +431,6 @@
             opacity: 0;
             transition: opacity 0.6s ease;
             will-change: opacity;
-            position: relative;
         }
 
         #main-content.visible {
@@ -395,7 +439,7 @@
 
         /* Header Styles */
         header {
-            background-color: rgba(15, 23, 42, 0.9);
+            background-color: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             position: fixed;
@@ -404,16 +448,6 @@
             z-index: 990;
             padding: 1rem 0;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        header.scrolled {
-            background-color: rgba(15, 23, 42, 0.95);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        header.hidden {
-            transform: translateY(-100%);
         }
 
         nav {
@@ -431,14 +465,6 @@
             background-clip: text;
             color: transparent;
             letter-spacing: -0.05em;
-            z-index: 999;
-            position: relative;
-            transition: transform 0.3s ease, filter 0.3s ease;
-        }
-        
-        .logo:hover {
-            transform: scale(1.05);
-            filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.6));
         }
         
         .nav-links {
@@ -452,22 +478,7 @@
             font-weight: 500;
             position: relative;
             padding: 0.5rem 0;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-        
-        .nav-links a::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -5px;
-            width: calc(100% + 10px);
-            height: 100%;
-            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-            opacity: 0;
-            border-radius: 4px;
-            z-index: -1;
-            transform: scaleY(0);
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: color 0.3s ease;
         }
         
         .nav-links a::after {
@@ -482,120 +493,11 @@
         }
         
         .nav-links a:hover {
-            color: var(--text-color);
-            transform: translateY(-2px);
-        }
-        
-        .nav-links a:hover::before {
-            opacity: 0.1;
-            transform: scaleY(0.7);
+            color: var(--primary-color);
         }
         
         .nav-links a:hover::after {
             width: 100%;
-        }
-
-        /* Mobile menu */
-        .hamburger {
-            display: none;
-            cursor: pointer;
-            z-index: 999;
-            background: none;
-            border: none;
-            padding: 0.5rem;
-        }
-        
-        .hamburger span {
-            display: block;
-            width: 30px;
-            height: 3px;
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            margin: 5px 0;
-            border-radius: 3px;
-            transition: all 0.3s ease;
-        }
-        
-        .mobile-menu {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 250px;
-            height: 100vh;
-            background-color: rgba(30, 41, 59, 0.98);
-            padding: 6rem 2rem 2rem;
-            z-index: 998;
-            transition: right 0.3s cubic-bezier(0.77, 0, 0.175, 1);
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(10px);
-        }
-        
-        .mobile-menu.active {
-            right: 0;
-        }
-        
-        .mobile-menu a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.2rem;
-            padding: 1rem 0;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            transition: color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
-            position: relative;
-            opacity: 0;
-            transform: translateX(20px);
-        }
-        
-        .mobile-menu.active a {
-            opacity: 1;
-            transform: translateX(0);
-            transition: opacity 0.4s ease, transform 0.4s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        .mobile-menu a:nth-child(1) { transition-delay: 0.1s; }
-        .mobile-menu a:nth-child(2) { transition-delay: 0.2s; }
-        .mobile-menu a:nth-child(3) { transition-delay: 0.3s; }
-        .mobile-menu a:nth-child(4) { transition-delay: 0.4s; }
-        
-        .mobile-menu a:hover {
-            color: var(--primary-light);
-            border-color: var(--primary-light);
-            transform: translateX(5px);
-        }
-        
-        .hamburger.active span:nth-child(1) {
-            transform: translateY(8px) rotate(45deg);
-            background: linear-gradient(to right, var(--primary-light), var(--secondary-color));
-        }
-        
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-        
-        .hamburger.active span:nth-child(3) {
-            transform: translateY(-8px) rotate(-45deg);
-            background: linear-gradient(to right, var(--primary-light), var(--secondary-color));
-        }
-        
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 997;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .overlay.active {
-            opacity: 1;
-            visibility: visible;
         }
 
         .btn {
@@ -611,28 +513,10 @@
             position: relative;
             overflow: hidden;
         }
-        
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 80%);
-            opacity: 0;
-            transform: scale(0.5);
-            transition: transform 0.5s ease, opacity 0.5s ease;
-        }
 
         .btn:hover {
             transform: translateY(-3px);
             box-shadow: var(--shadow-lg);
-        }
-        
-        .btn:hover::before {
-            opacity: 1;
-            transform: scale(1);
         }
         
         .btn:focus {
@@ -644,18 +528,11 @@
         .section {
             padding: 8rem 0 5rem;
             position: relative;
-            z-index: 5;
-            overflow: hidden;
-        }
-        
-        .section-inner {
-            position: relative;
-            transition: transform 0.5s ease;
         }
 
         .section-title {
             font-family: var(--font-main);
-            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-size: 3.5rem;
             text-align: center;
             margin-bottom: 4rem;
             background: var(--gradient-1);
@@ -667,15 +544,6 @@
             left: 50%;
             transform: translateX(-50%);
             font-weight: 800;
-            width: 100%;
-            opacity: 0;
-            transform: translateX(-50%) translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-        
-        .section-title.reveal {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
         }
 
         .section-title::after {
@@ -683,41 +551,26 @@
             position: absolute;
             bottom: -15px;
             left: 50%;
-            transform: translateX(-50%) scaleX(0);
+            transform: translateX(-50%);
             width: 100px;
             height: 4px;
             background: var(--gradient-1);
             border-radius: 10px;
-            transition: transform 0.6s ease 0.3s;
-        }
-        
-        .section-title.reveal::after {
-            transform: translateX(-50%) scaleX(1);
         }
         
         .section-subtitle {
             text-align: center;
             color: var(--text-secondary);
-            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-size: 1.2rem;
             max-width: 700px;
             margin: -2rem auto 4rem;
-            padding: 0 1rem;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s;
-        }
-        
-        .section-subtitle.reveal {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         /* Info Cards */
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 2.5rem;
-            width: 100%;
         }
 
         .info-card {
@@ -732,64 +585,12 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            transform: translateY(50px);
-            transform-style: preserve-3d;
-            perspective: 1000px;
-            will-change: transform;
         }
-        
-        .info-card.reveal {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .info-card:nth-child(1).reveal { transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s, box-shadow 0.4s ease, background-color 0.4s ease; }
-        .info-card:nth-child(2).reveal { transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s, box-shadow 0.4s ease, background-color 0.4s ease; }
-        .info-card:nth-child(3).reveal { transition: opacity 0.6s ease 0.5s, transform 0.6s ease 0.5s, box-shadow 0.4s ease, background-color 0.4s ease; }
 
-        /* Card Hover Effect */
-        .card-hover-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            border-radius: 20px;
-            z-index: -1;
-        }
-        
-        .info-card:hover .card-hover-effect,
-        .treatment-card:hover .card-hover-effect {
-            opacity: 0.07;
-        }
-        
         .info-card:hover {
             transform: translateY(-10px);
-            box-shadow: var(--shadow-lg), 0 0 20px rgba(99, 102, 241, 0.3);
+            box-shadow: var(--shadow-lg);
             background: var(--card-bg-hover);
-        }
-        
-        .info-card::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            width: calc(100% + 4px);
-            height: calc(100% + 4px);
-            background: var(--gradient-1);
-            z-index: -1;
-            border-radius: 22px;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        
-        .info-card:hover::before {
-            opacity: 1;
         }
 
         .info-card h3 {
@@ -798,13 +599,6 @@
             margin-bottom: 1.2rem;
             color: var(--primary-color);
             font-weight: 700;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-        
-        .info-card:hover h3 {
-            transform: translateY(-5px);
-            color: white;
-            text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
         }
 
         .info-card p {
@@ -813,12 +607,6 @@
             font-size: 1.05rem;
             line-height: 1.7;
             flex-grow: 1;
-            transition: transform 0.3s ease 0.1s, color 0.3s ease 0.1s;
-        }
-        
-        .info-card:hover p {
-            color: var(--text-color);
-            transform: translateY(-3px);
         }
 
         .info-icon {
@@ -829,11 +617,10 @@
             background-clip: text;
             color: transparent;
             transition: transform 0.3s ease;
-            display: inline-block;
         }
 
         .info-card:hover .info-icon {
-            transform: scale(1.1) rotateY(180deg);
+            transform: scale(1.1);
         }
 
         .info-image {
@@ -841,15 +628,13 @@
             height: 180px;
             border-radius: 12px;
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 1;
         }
 
         .info-card:hover .info-image {
-            transform: translateY(2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 15px rgba(99, 102, 241, 0.3);
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .info-image img {
@@ -895,10 +680,8 @@
         
         .treatment-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 3rem;
-            width: 100%;
-            perspective: 1000px;
         }
         
         .treatment-card {
@@ -908,60 +691,30 @@
             box-shadow: var(--shadow-md);
             display: flex;
             flex-direction: column;
-            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transform-style: preserve-3d;
-            position: relative;
-            opacity: 0;
-            transform: translateY(30px) rotateX(10deg);
-            will-change: transform;
         }
-        
-        .treatment-card.reveal {
-            opacity: 1;
-            transform: translateY(0) rotateX(0);
-        }
-        
-        .treatment-card:first-child.reveal { transition: opacity 0.8s ease 0.1s, transform 0.8s ease 0.1s, box-shadow 0.3s ease; }
-        .treatment-card:last-child.reveal { transition: opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s, box-shadow 0.3s ease; }
         
         .treatment-card:hover {
-            transform: translateY(-15px);
-            box-shadow: var(--shadow-lg), 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 15px rgba(99, 102, 241, 0.2);
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
         }
         
         .treatment-image {
             height: 200px;
             overflow: hidden;
-            position: relative;
-        }
-        
-        .treatment-image::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(30, 41, 59, 0) 0%, rgba(30, 41, 59, 0.8) 100%);
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        
-        .treatment-card:hover .treatment-image::after {
-            opacity: 1;
         }
         
         .treatment-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.8s ease;
+            transition: transform 0.5s ease;
         }
         
         .treatment-card:hover .treatment-image img {
-            transform: scale(1.15);
+            transform: scale(1.1);
         }
         
         .treatment-content {
@@ -969,12 +722,6 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            transform: translateZ(10px);
-            transition: transform 0.3s ease;
-        }
-        
-        .treatment-card:hover .treatment-content {
-            transform: translateY(-5px);
         }
         
         .treatment-title {
@@ -985,13 +732,6 @@
             position: relative;
             display: inline-block;
             font-weight: 700;
-            transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
-        }
-        
-        .treatment-card:hover .treatment-title {
-            color: white;
-            transform: translateY(-5px);
-            text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
         }
         
         .treatment-card:first-child .treatment-title::before {
@@ -1005,8 +745,6 @@
             font-size: 0.85rem;
             border-radius: 20px;
             font-weight: 500;
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
         }
         
         .treatment-card:last-child .treatment-title::before {
@@ -1020,19 +758,6 @@
             font-size: 0.85rem;
             border-radius: 20px;
             font-weight: 500;
-            box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-        
-        .treatment-card:hover .treatment-title::before {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
-            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
-        }
-        
-        .treatment-card:last-child:hover .treatment-title::before {
-            box-shadow: 0 8px 25px rgba(236, 72, 153, 0.5);
-            background: linear-gradient(to right, var(--secondary-color), #f472b6);
         }
         
         .treatment-text {
@@ -1041,12 +766,6 @@
             font-size: 1rem;
             line-height: 1.7;
             flex-grow: 1;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-        
-        .treatment-card:hover .treatment-text {
-            color: var(--text-color);
-            transform: translateY(-3px);
         }
         
         .treatment-points {
@@ -1059,33 +778,13 @@
             padding-left: 1.5rem;
             margin-bottom: 0.5rem;
             color: var(--text-secondary);
-            transition: transform 0.3s ease, color 0.3s ease;
-            transform: translateZ(0);
-            opacity: 0.8;
         }
-        
-        .treatment-card:hover .treatment-points li {
-            color: var(--text-color);
-            opacity: 1;
-        }
-        
-        .treatment-points li:nth-child(1) { transition-delay: 0.05s; }
-        .treatment-points li:nth-child(2) { transition-delay: 0.1s; }
-        .treatment-points li:nth-child(3) { transition-delay: 0.15s; }
-        .treatment-points li:nth-child(4) { transition-delay: 0.2s; }
-        .treatment-points li:nth-child(5) { transition-delay: 0.25s; }
         
         .treatment-points li::before {
             content: '→';
             position: absolute;
             left: 0;
             color: var(--primary-light);
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-        
-        .treatment-card:hover .treatment-points li::before {
-            transform: translateX(3px);
-            color: var(--accent-color);
         }
         
         .learn-more {
@@ -1094,7 +793,7 @@
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s ease, transform 0.3s ease;
+            transition: color 0.3s ease;
             position: relative;
             align-self: flex-start;
         }
@@ -1107,17 +806,15 @@
             width: 0;
             height: 1px;
             background: var(--primary-color);
-            transition: width 0.3s ease, background 0.3s ease;
+            transition: width 0.3s ease;
         }
         
         .learn-more:hover {
             color: var(--primary-light);
-            transform: translateX(5px);
         }
         
         .learn-more:hover::after {
             width: 100%;
-            background: var(--primary-light);
         }
 
         /* Glow effect */
@@ -1129,9 +826,8 @@
             background: var(--primary-color);
             opacity: 0.03;
             filter: blur(120px);
-            z-index: 0;
+            z-index: -1;
             pointer-events: none;
-            transition: opacity 0.5s ease, transform 0.5s ease;
         }
         
         .glow-orb.secondary {
@@ -1141,96 +837,19 @@
         .glow-orb.left {
             top: 15%;
             left: -100px;
-            animation: float-left 15s infinite alternate ease-in-out;
         }
         
         .glow-orb.right {
             bottom: 15%;
             right: -100px;
-            animation: float-right 15s infinite alternate ease-in-out;
-        }
-        
-        @keyframes float-left {
-            0% { transform: translateY(0) translateX(0); opacity: 0.03; }
-            50% { transform: translateY(-50px) translateX(30px); opacity: 0.05; }
-            100% { transform: translateY(50px) translateX(-30px); opacity: 0.02; }
-        }
-        
-        @keyframes float-right {
-            0% { transform: translateY(0) translateX(0); opacity: 0.03; }
-            50% { transform: translateY(50px) translateX(-30px); opacity: 0.05; }
-            100% { transform: translateY(-50px) translateX(30px); opacity: 0.02; }
-        }
-        
-        /* 3D Virus Floating Elements */
-        .virus-particle {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.6), rgba(99, 102, 241, 0.1));
-            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.3), 0 0 15px rgba(99, 102, 241, 0.3);
-            z-index: 1;
-            transform-style: preserve-3d;
-            animation: float-particle 15s infinite linear;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        
-        .virus-particle::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(236, 72, 153, 0.6), rgba(236, 72, 153, 0.1));
-            opacity: 0.7;
-            filter: blur(5px);
-            transform: translateZ(-10px);
-        }
-        
-        .virus-particle:nth-child(1) {
-            top: 10%;
-            left: 5%;
-            width: 40px;
-            height: 40px;
-            animation-duration: 20s;
-            animation-delay: 0s;
-        }
-        
-        .virus-particle:nth-child(2) {
-            top: 70%;
-            left: 80%;
-            width: 35px;
-            height: 35px;
-            animation-duration: 25s;
-            animation-delay: 5s;
-        }
-        
-        .virus-particle:nth-child(3) {
-            top: 40%;
-            left: 20%;
-            width: 50px;
-            height: 50px;
-            animation-duration: 30s;
-            animation-delay: 2s;
-        }
-        
-        @keyframes float-particle {
-            0% { transform: translateY(0) translateX(0) rotate(0deg); }
-            25% { transform: translateY(-100px) translateX(50px) rotate(90deg); }
-            50% { transform: translateY(0) translateX(100px) rotate(180deg); }
-            75% { transform: translateY(100px) translateX(50px) rotate(270deg); }
-            100% { transform: translateY(0) translateX(0) rotate(360deg); }
         }
 
         /* Footer */
         footer {
-            background-color: rgba(10, 15, 28, 0.95);
+            background-color: #0a0f1c;
             color: var(--text-secondary);
             padding: 3rem 0 1.5rem;
             position: relative;
-            backdrop-filter: blur(10px);
         }
 
         footer::before {
@@ -1243,28 +862,15 @@
             background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
             opacity: 0.3;
         }
-        
-        footer::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: var(--gradient-1);
-            opacity: 0.1;
-        }
 
         .footer-content {
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
             gap: 3rem;
             margin-bottom: 2rem;
         }
 
         .footer-main {
-            flex: 1 1 300px;
             max-width: 350px;
         }
 
@@ -1273,10 +879,6 @@
             opacity: 0.7;
             font-size: 0.95rem;
             line-height: 1.6;
-        }
-
-        .footer-links {
-            flex: 1 1 200px;
         }
 
         .footer-links h4 {
@@ -1296,11 +898,6 @@
             width: 30px;
             height: 2px;
             background: var(--gradient-1);
-            transition: width 0.3s ease;
-        }
-        
-        .footer-links:hover h4::after {
-            width: 100%;
         }
 
         .footer-links ul {
@@ -1309,12 +906,6 @@
 
         .footer-links ul li {
             margin-bottom: 0.8rem;
-            transform: translateX(0);
-            transition: transform 0.3s ease;
-        }
-        
-        .footer-links ul li:hover {
-            transform: translateX(5px);
         }
 
         .footer-links a {
@@ -1327,16 +918,6 @@
 
         .footer-links a:hover {
             color: var(--primary-color);
-        }
-        
-        .footer-logo {
-            margin-bottom: 1rem;
-            transition: filter 0.3s ease, transform 0.3s ease;
-        }
-        
-        .footer-logo:hover {
-            filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.5));
-            transform: scale(1.05);
         }
 
         /* Back to top button */
@@ -1357,21 +938,8 @@
             box-shadow: var(--shadow-md);
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            z-index: 100;
-            overflow: hidden;
-        }
-        
-        .back-to-top::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 80%);
-            opacity: 0;
             transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 100;
         }
         
         .back-to-top.visible {
@@ -1381,13 +949,7 @@
         
         .back-to-top:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-lg), 0 0 15px rgba(99, 102, 241, 0.5);
-        }
-        
-        .back-to-top:hover::before {
-            opacity: 1;
-            transform: scale(1.5) rotate(45deg);
-            transition: opacity 0.3s ease, transform 0.6s ease;
+            box-shadow: var(--shadow-lg);
         }
 
         .copyright {
@@ -1400,55 +962,50 @@
 
         /* Media Queries */
         @media (max-width: 1100px) {
-            .info-grid, .treatment-grid {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 2rem;
+            .info-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             }
             
-            .virus-particle {
-                display: none;
+            .treatment-grid {
+                grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 992px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hamburger {
-                display: block;
-            }
-            
             .section-title {
-                font-size: clamp(1.8rem, 5vw, 3rem);
+                font-size: 3rem;
+            }
+            
+            .splash-logo {
+                font-size: 4rem;
             }
             
             #virus-container {
                 height: 350px;
             }
             
-            .bg-orb {
-                opacity: 0.1;
+            .nav-links {
+                display: none;
             }
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 0 1.5rem;
-            }
-            
-            .section {
-                padding: 6rem 0 3rem;
+            .section-title {
+                font-size: 2.5rem;
             }
             
             .section-subtitle {
-                margin: -1.5rem auto 3rem;
+                font-size: 1.1rem;
             }
-            
-            .info-card, .treatment-content {
-                padding: 2rem;
+
+            .info-grid {
+                grid-template-columns: 1fr;
             }
-            
+
+            .splash-logo {
+                font-size: 3rem;
+            }
+
             .footer-content {
                 flex-direction: column;
                 gap: 2rem;
@@ -1461,27 +1018,36 @@
             .btn {
                 padding: 0.7rem 1.5rem;
             }
-            
-            .treatment-title::before {
-                top: -35px !important;
-            }
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 480px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
+            }
+
+            .info-card, .treatment-content {
+                padding: 1.8rem;
+            }
+
             .info-card h3 {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
             }
-            
-            .info-card p, .treatment-text {
-                font-size: 0.95rem;
-            }
-            
-            .treatment-points li {
-                font-size: 0.9rem;
+
+            .splash-logo {
+                font-size: 2.2rem;
+                margin-bottom: 2rem;
             }
             
             #virus-container {
                 height: 250px;
+            }
+            
+            .container {
+                padding: 0 1.5rem;
             }
             
             .back-to-top {
@@ -1490,128 +1056,14 @@
                 width: 45px;
                 height: 45px;
             }
-            
-            .loader-3d-container {
-                width: 120px;
-                height: 120px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .info-card, .treatment-content {
-                padding: 1.5rem;
-            }
-            
-            .info-image {
-                height: 150px;
-            }
-            
-            .treatment-image {
-                height: 180px;
-            }
-            
-            .section {
-                padding: 5rem 0 2rem;
-            }
-            
-            #virus-container {
-                height: 220px;
-            }
-            
-            .scroll-hint {
-                padding: 0.8rem;
-                font-size: 0.9rem;
-            }
-            
-            .scroll-arrow {
-                font-size: 1.5rem;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .container {
-                padding: 0 1rem;
-            }
-            
-            .logo {
-                font-size: 1.8rem;
-            }
-            
-            .mobile-menu {
-                width: 100%;
-            }
-            
-            #virus-container {
-                height: 200px;
-            }
-        }
-
-        /* Fix pour l'affichage sur petits appareils */
-        @media (max-height: 600px) {
-            .splash-logo {
-                margin-bottom: 1.5rem;
-            }
-            
-            #virus-container {
-                height: 180px;
-                margin-bottom: 1rem;
-            }
-            
-            .scroll-hint {
-                padding: 0.5rem 1rem;
-            }
-        }
-
-        /* Optimisation pour appareils à haute densité de pixels */
-        @media 
-        (-webkit-min-device-pixel-ratio: 2), 
-        (min-resolution: 192dpi) {
-            .info-image img, .treatment-image img {
-                transform: scale(1);
-            }
-        }
-        
-        /* Pour désactiver certaines animations sur les appareils qui préfèrent le mouvement réduit */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-                scroll-behavior: auto !important;
-            }
-            
-            .info-card, .treatment-card, .section-title, .section-subtitle {
-                transition: none !important;
-                transform: none !important;
-                opacity: 1 !important;
-            }
-            
-            .virus-particle, .bg-orb {
-                display: none !important;
-            }
         }
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
     <div id="loading-screen">
-        <div class="loader-3d-container">
-            <div class="loader-3d">
-                <div class="loader-face"></div>
-                <div class="loader-face"></div>
-                <div class="loader-face"></div>
-                <div class="loader-face"></div>
-            </div>
-        </div>
+        <span class="loader"></span>
     </div>
-
-    <!-- Particles Background -->
-    <div id="particles-js"></div>
-    
-    <!-- Background Orbs -->
-    <div class="bg-orb primary"></div>
-    <div class="bg-orb secondary"></div>
-    <div class="bg-orb accent"></div>
 
     <!-- Splash Screen -->
     <div id="splash-screen">
@@ -1627,11 +1079,6 @@
 
     <!-- Main Content -->
     <div id="main-content">
-        <!-- Virus Particles -->
-        <div class="virus-particle"></div>
-        <div class="virus-particle"></div>
-        <div class="virus-particle"></div>
-        
         <!-- Header -->
         <header>
             <div class="container">
@@ -1641,63 +1088,46 @@
                         <a href="#about">Définition</a>
                         <a href="#treatments">Traitements</a>
                     </div>
-                    <button class="hamburger" aria-label="Menu de navigation">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
                 </nav>
             </div>
         </header>
-
-        <!-- Mobile Menu -->
-        <div class="mobile-menu">
-            <a href="#about" class="mobile-link">Définition</a>
-            <a href="#treatments" class="mobile-link">Traitements</a>
-        </div>
-        <div class="overlay"></div>
 
         <!-- About Section -->
         <section class="section" id="about">
             <div class="glow-orb left"></div>
             <div class="glow-orb secondary right"></div>
             <div class="container">
-                <div class="section-inner">
-                    <h2 class="section-title">Comprendre le COVID Long</h2>
-                    <p class="section-subtitle">Le COVID Long est une condition qui affecte environ 10-30% des personnes infectées par le SARS-CoV-2, se manifestant par des symptômes persistants malgré la disparition de l'infection aiguë.</p>
-                    <div class="info-grid">
-                        <div class="info-card">
-                            <div class="card-hover-effect"></div>
-                            <div class="info-icon">🔍</div>
-                            <h3>Définition</h3>
-                            <p>
-                                Le COVID Long désigne un ensemble de symptômes qui persistent pendant des mois voir des années après l'infection initiale au COVID-19, généralement au-delà de 12 semaines après le début de la maladie.
-                            </p>
-                            <div class="info-image">
-                                <img src="https://images.unsplash.com/photo-1584483766114-2cea6facdf57?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHZpcnVzfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Illustration du virus COVID-19">
-                            </div>
+                <h2 class="section-title">Comprendre le COVID Long</h2>
+                <p class="section-subtitle">Le COVID Long est une condition qui affecte environ 10-30% des personnes infectées par le SARS-CoV-2, se manifestant par des symptômes persistants malgré la disparition de l'infection aiguë.</p>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-icon">🔍</div>
+                        <h3>Définition</h3>
+                        <p>
+                            Le COVID Long désigne un ensemble de symptômes qui persistent pendant des mois voir des années après l'infection initiale au COVID-19, généralement au-delà de 12 semaines après le début de la maladie.
+                        </p>
+                        <div class="info-image">
+                            <img src="https://images.unsplash.com/photo-1584483766114-2cea6facdf57?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHZpcnVzfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Illustration du virus COVID-19">
                         </div>
-                        <div class="info-card">
-                            <div class="card-hover-effect"></div>
-                            <div class="info-icon">🧬</div>
-                            <h3>Causes</h3>
-                            <p>
-                                Les recherches suggèrent plusieurs mécanismes, notamment la persistance du virus dans certains tissus, le dérèglement du système immunitaire, des microthrombus affectant l'oxygénation, et des dommages tissulaires suite à l'infection initiale.
-                            </p>
-                            <div class="info-image">
-                                <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1tdW5lJTIwc3lzdGVtfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Cellules du système immunitaire">
-                            </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">🧬</div>
+                        <h3>Causes</h3>
+                        <p>
+                            Les recherches suggèrent plusieurs mécanismes, notamment la persistance du virus dans certains tissus, le dérèglement du système immunitaire, des microthrombus affectant l'oxygénation, et des dommages tissulaires suite à l'infection initiale.
+                        </p>
+                        <div class="info-image">
+                            <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1tdW5lJTIwc3lzdGVtfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Cellules du système immunitaire">
                         </div>
-                        <div class="info-card">
-                            <div class="card-hover-effect"></div>
-                            <div class="info-icon">⚡</div>
-                            <h3>Symptômes</h3>
-                            <p>
-                                Les patients atteints du COVID Long présentent souvent de la fatigue, un brouillard mental, des difficultés respiratoires, des palpitations cardiaques et des douleurs articulaires. Le malaise post-effort, où les symptômes s'aggravent après une activité physique ou mentale, est également fréquent.
-                            </p>
-                            <div class="info-image">
-                                <img src="https://emblemhealth.scene7.com/is/image/emblemhealth/Stress%20Blog?ts=1720686897498&dpr=off" alt="Personne souffrant de fatigue">
-                            </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">⚡</div>
+                        <h3>Symptômes</h3>
+                        <p>
+                            Les patients atteints du COVID Long présentent souvent de la fatigue, un brouillard mental, des difficultés respiratoires, des palpitations cardiaques et des douleurs articulaires. Le malaise post-effort, où les symptômes s'aggravent après une activité physique ou mentale, est également fréquent.
+                        </p>
+                        <div class="info-image">
+                            <img src="https://emblemhealth.scene7.com/is/image/emblemhealth/Stress%20Blog?ts=1720686897498&dpr=off" alt="Personne souffrant de fatigue">
                         </div>
                     </div>
                 </div>
@@ -1707,44 +1137,42 @@
         <!-- Treatments Section -->
         <section class="section treatments" id="treatments">
             <div class="container">
-                <div class="section-inner">
-                    <h2 class="section-title">Approches Thérapeutiques</h2>
-                    <p class="section-subtitle">Bien qu'il n'existe pas encore de traitement spécifique pour le COVID Long, plusieurs approches sont utilisées pour gérer les symptômes et améliorer la qualité de vie des patients.</p>
-                    <div class="treatment-grid">
-                        <div class="treatment-card">
-                            <div class="card-hover-effect"></div>
-                            <div class="treatment-image">
-                                <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Approche médicale">
-                            </div>
-                            <div class="treatment-content">
-                                <h3 class="treatment-title">Approche Médicale</h3>
-                                <p class="treatment-text">Les médecins adoptent généralement une approche multidisciplinaire pour traiter les symptômes spécifiques du COVID Long. Des spécialistes de différents domaines collaborent pour offrir des soins personnalisés.</p>
-                                <ul class="treatment-points">
-                                    <li>Cardiologues pour les problèmes de rythme cardiaque</li>
-                                    <li>Pneumologues pour les difficultés respiratoires</li>
-                                    <li>Neurologues pour le brouillard mental et les problèmes cognitifs</li>
-                                    <li>Programmes de réadaptation spécialisés</li>
-                                    <li>Médicaments pour la gestion des symptômes spécifiques</li>
-                                </ul>
-                            </div>
+                <h2 class="section-title">Approches Thérapeutiques</h2>
+                <p class="section-subtitle">Bien qu'il n'existe pas encore de traitement spécifique pour le COVID Long, plusieurs approches sont utilisées pour gérer les symptômes et améliorer la qualité de vie des patients.</p>
+                <div class="treatment-grid">
+                    <div class="treatment-card">
+                        <div class="treatment-image">
+                            <img src="https://images.unsplash.com/photo-1579154204601-01588f351e67?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80" alt="Approche médicale">
                         </div>
-                        
-                        <div class="treatment-card">
-                            <div class="card-hover-effect"></div>
-                            <div class="treatment-image">
-                                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=920&q=80" alt="Approches complémentaires">
-                            </div>
-                            <div class="treatment-content">
-                                <h3 class="treatment-title">Approches de Bien-être</h3>
-                                <p class="treatment-text">De nombreux patients trouvent un soulagement dans des approches complémentaires qui, associées aux soins médicaux, peuvent améliorer leur qualité de vie et favoriser le rétablissement.</p>
-                                <ul class="treatment-points">
-                                    <li>Rythme d'activité adapté (pacing) pour gérer l'énergie</li>
-                                    <li>Techniques de respiration et méditation</li>
-                                    <li>Nutrition ciblée anti-inflammatoire</li>
-                                    <li>Physiothérapie et exercices doux adaptés</li>
-                                    <li>Groupes de soutien entre patients</li>
-                                </ul>
-                            </div>
+                        <div class="treatment-content">
+                            <h3 class="treatment-title">Approche Médicale</h3>
+                            <p class="treatment-text">Les médecins adoptent généralement une approche multidisciplinaire pour traiter les symptômes spécifiques du COVID Long. Des spécialistes de différents domaines collaborent pour offrir des soins personnalisés.</p>
+                            <ul class="treatment-points">
+                                <li>Cardiologues pour les problèmes de rythme cardiaque</li>
+                                <li>Pneumologues pour les difficultés respiratoires</li>
+                                <li>Neurologues pour le brouillard mental et les problèmes cognitifs</li>
+                                <li>Programmes de réadaptation spécialisés</li>
+                                <li>Médicaments pour la gestion des symptômes spécifiques</li>
+                            </ul>
+         
+                        </div>
+                    </div>
+                    
+                    <div class="treatment-card">
+                        <div class="treatment-image">
+                            <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=920&q=80" alt="Approches complémentaires">
+                        </div>
+                        <div class="treatment-content">
+                            <h3 class="treatment-title">Approches de Bien-être</h3>
+                            <p class="treatment-text">De nombreux patients trouvent un soulagement dans des approches complémentaires qui, associées aux soins médicaux, peuvent améliorer leur qualité de vie et favoriser le rétablissement.</p>
+                            <ul class="treatment-points">
+                                <li>Rythme d'activité adapté (pacing) pour gérer l'énergie</li>
+                                <li>Techniques de respiration et méditation</li>
+                                <li>Nutrition ciblée anti-inflammatoire</li>
+                                <li>Physiothérapie et exercices doux adaptés</li>
+                                <li>Groupes de soutien entre patients</li>
+                            </ul>
+                 
                         </div>
                     </div>
                 </div>
@@ -1759,7 +1187,7 @@
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-main">
-                        <div class="logo footer-logo">Long<span>Covid</span></div>
+                        <div class="logo">Long<span>Covid</span></div>
                         <p>Une ressource éducative fournissant des informations sur les effets à long terme de l'infection au COVID-19.</p>
                     </div>
                     <div class="footer-links">
@@ -1774,6 +1202,7 @@
                         <ul>
                             <li><a href="https://www.ncbi.nlm.nih.gov/pmc/?term=long+covid" target="_blank">Recherches Récentes</a></li>
                             <li><a href="https://longcovidfamilies.org/" target="_blank">Groupes de Soutien</a></li>
+    
                         </ul>
                     </div>
                 </div>
@@ -1783,7 +1212,7 @@
             </div>
         </footer>
     </div>
-    
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Références aux éléments DOM
@@ -1792,401 +1221,92 @@
         const mainContent = document.getElementById('main-content');
         const scrollHint = document.querySelector('.scroll-hint');
         const backToTopBtn = document.querySelector('.back-to-top');
-        const hamburger = document.querySelector('.hamburger');
-        const mobileMenu = document.querySelector('.mobile-menu');
-        const overlay = document.querySelector('.overlay');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-        const header = document.querySelector('header');
-        const sectionTitles = document.querySelectorAll('.section-title');
-        const sectionSubtitles = document.querySelectorAll('.section-subtitle');
-        const infoCards = document.querySelectorAll('.info-card');
-        const treatmentCards = document.querySelectorAll('.treatment-card');
         
-        // Détecter les appareils de faible puissance
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isLowPower = isMobile || window.matchMedia('(max-width: 768px)').matches;
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Afficher l'écran de chargement initialement
+        loadingScreen.classList.remove('hidden');
         
-        // Initialiser uniquement si l'utilisateur ne préfère pas la réduction des animations
-        if (!prefersReducedMotion) {
-            // Créer un système de particules simplifié pour le fond
-            initParticlesSystem();
-        }
-        
-        // Fonction simplifiée pour créer un système de particules
-        function initParticlesSystem() {
-            if (isLowPower) return; // Ne pas initialiser sur les appareils de faible puissance
-            
-            const particlesContainer = document.getElementById('particles-js');
-            const particleCount = isLowPower ? 20 : 50;
-            const particles = [];
-            
-            // Créer les particules
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.style.position = 'absolute';
-                particle.style.width = Math.random() * 5 + 2 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.borderRadius = '50%';
-                
-                // Couleurs variées basées sur notre palette
-                const colors = [
-                    'rgba(99, 102, 241, 0.5)',   // primary
-                    'rgba(236, 72, 153, 0.5)',   // secondary
-                    'rgba(34, 211, 238, 0.5)'    // accent
-                ];
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.boxShadow = '0 0 ' + (Math.random() * 5 + 3) + 'px ' + particle.style.backgroundColor;
-                
-                // Position aléatoire
-                particle.style.left = Math.random() * 100 + 'vw';
-                particle.style.top = Math.random() * 100 + 'vh';
-                
-                // Propriétés de mouvement
-                const particleObj = {
-                    element: particle,
-                    x: parseFloat(particle.style.left),
-                    y: parseFloat(particle.style.top),
-                    speedX: Math.random() * 0.3 - 0.15,
-                    speedY: Math.random() * 0.3 - 0.15,
-                    opacity: Math.random() * 0.5 + 0.2
-                };
-                
-                particle.style.opacity = particleObj.opacity;
-                particlesContainer.appendChild(particle);
-                particles.push(particleObj);
-            }
-            
-            // Animation des particules
-            function animateParticles() {
-                particles.forEach(p => {
-                    p.x += p.speedX;
-                    p.y += p.speedY;
-                    
-                    // Rebondissement sur les bords
-                    if (p.x > 100) p.x = 0;
-                    if (p.x < 0) p.x = 100;
-                    if (p.y > 100) p.y = 0;
-                    if (p.y < 0) p.y = 100;
-                    
-                    p.element.style.left = p.x + 'vw';
-                    p.element.style.top = p.y + 'vh';
-                });
-                
-                requestAnimationFrame(animateParticles);
-            }
-            
-            animateParticles();
-        }
-        
-        // Initialisation des effets 3D personnalisés pour les cartes
-        initCardEffects();
-        
-        // Effet 3D personnalisé pour les cartes (plus performant que VanillaTilt)
-        function initCardEffects() {
-            if (isLowPower || prefersReducedMotion) return;
-            
-            const cards = document.querySelectorAll('.info-card, .treatment-card');
-            
-            cards.forEach(card => {
-                // Variables pour l'effet hover 3D
-                let rect, centerX, centerY;
-                const maxRotation = 8; // degrés maximum de rotation
-                
-                // Calculer les dimensions et le centre de la carte au survol
-                card.addEventListener('mouseenter', () => {
-                    rect = card.getBoundingClientRect();
-                    centerX = rect.left + rect.width / 2;
-                    centerY = rect.top + rect.height / 2;
-                    
-                    card.style.transition = 'transform 0.1s ease';
-                });
-                
-                // Effet de rotation basé sur la position de la souris
-                card.addEventListener('mousemove', e => {
-                    if (!rect) return;
-                    
-                    const mouseX = e.clientX;
-                    const mouseY = e.clientY;
-                    
-                    // Calculer la distance par rapport au centre en pourcentage
-                    const percentX = (mouseX - centerX) / (rect.width / 2);
-                    const percentY = (mouseY - centerY) / (rect.height / 2);
-                    
-                    // Appliquer la rotation (inversée pour un effet naturel)
-                    const rotateY = percentX * -maxRotation;
-                    const rotateX = percentY * maxRotation;
-                    
-                    // Appliquer la transformation avec requestAnimationFrame pour optimiser les performances
-                    requestAnimationFrame(() => {
-                        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
-                        
-                        // Effet de lueur dynamique basé sur la position de la souris
-                        const glowX = 50 + percentX * 50; // 0-100%
-                        const glowY = 50 + percentY * 50; // 0-100%
-                        
-                        // Appliquer l'effet de lueur dynamique
-                        const hoverEffect = card.querySelector('.card-hover-effect');
-                        if (hoverEffect) {
-                            hoverEffect.style.background = `radial-gradient(circle at ${glowX}% ${glowY}%, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.05))`;
-                        }
-                    });
-                });
-                
-                // Réinitialiser la transformation au départ
-                card.addEventListener('mouseleave', () => {
-                    card.style.transition = 'transform 0.3s ease';
-                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
-                    
-                    // Réinitialiser l'effet de lueur
-                    const hoverEffect = card.querySelector('.card-hover-effect');
-                    if (hoverEffect) {
-                        hoverEffect.style.background = '';
-                    }
-                });
-            });
-        }
-        
-        // Fonction pour le menu mobile
-        function toggleMobileMenu() {
-            hamburger.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = hamburger.classList.contains('active') ? 'hidden' : '';
-        }
-        
-        hamburger.addEventListener('click', toggleMobileMenu);
-        overlay.addEventListener('click', toggleMobileMenu);
-        
-        // Navigation vers les sections depuis le menu mobile - CORRIGÉ
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                // Fermer le menu mobile
-                toggleMobileMenu();
-                
-                // Attendre que l'animation de fermeture soit terminée
-                setTimeout(() => {
-                    if (targetElement) {
-                        const headerHeight = document.querySelector('header').offsetHeight;
-                        const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
-                        
-                        // Faire défiler la page vers la section cible
-                        window.scrollTo({
-                            top: targetPosition,
-                            behavior: 'smooth'
-                        });
-                    }
-                }, 500); // Augmenté à 500ms pour s'assurer que l'animation de fermeture du menu est terminée
-            });
-        });
-        
-        // Initialiser le modèle 3D du virus amélioré
-        function initEnhancedVirusModel() {
+        // Initialiser le modèle 3D du virus simplifié
+        function initVirusModel() {
             const canvas = document.getElementById('virus-canvas');
             if (!canvas) return;
             
             const renderer = new THREE.WebGLRenderer({
                 canvas,
-                antialias: !isLowPower,
+                antialias: true,
                 alpha: true,
-                powerPreference: isLowPower ? 'low-power' : 'high-performance'
+                powerPreference: 'high-performance'
             });
             
             // Définir la taille en fonction du conteneur
             const container = document.getElementById('virus-container');
-            const pixelRatio = isLowPower ? 1 : Math.min(window.devicePixelRatio, 2);
-            renderer.setPixelRatio(pixelRatio);
             renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             
             const scene = new THREE.Scene();
             
             const camera = new THREE.PerspectiveCamera(70, container.clientWidth / container.clientHeight, 0.1, 1000);
             camera.position.z = 4;
             
-            // Éclairage amélioré
+            // Éclairage simplifié
             const ambientLight = new THREE.AmbientLight(0x6366f1, 0.4);
             scene.add(ambientLight);
             
-            const pointLight1 = new THREE.PointLight(0x6366f1, 2, 50);
-            pointLight1.position.set(0, 0, 5);
-            scene.add(pointLight1);
+            const pointLight = new THREE.PointLight(0x6366f1, 2, 50);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
             
-            const pointLight2 = new THREE.PointLight(0xec4899, 1, 20);
-            pointLight2.position.set(5, -2, 3);
-            scene.add(pointLight2);
-            
-            const pointLight3 = new THREE.PointLight(0x22d3ee, 1, 20);
-            pointLight3.position.set(-5, 2, 3);
-            scene.add(pointLight3);
-            
-            // Créer le groupe du virus
+            // Créer le modèle du virus - simplifié pour de meilleures performances
             const virusGroup = new THREE.Group();
             scene.add(virusGroup);
             
-            // Détail basé sur la puissance de l'appareil
-            const sphereDetail = isLowPower ? 16 : 32;
-            const spikeDetail = isLowPower ? 6 : 8;
-            const spikeCount = isLowPower ? 15 : 30;
-            
-            // Matériau amélioré pour la sphère principale
-            const mainMaterial = new THREE.MeshPhongMaterial({
-                color: 0x6366f1,
-                shininess: 100,
-                emissive: 0x6366f1,
-                emissiveIntensity: 0.2,
-                specular: 0xffffff
-            });
-            
             // Sphère principale
-            const mainGeometry = new THREE.SphereGeometry(1.2, sphereDetail, sphereDetail);
+            const mainGeometry = new THREE.SphereGeometry(1.2, 32, 32); // Nombre de polygones réduit
+            const mainMaterial = new THREE.MeshPhongMaterial({ // MeshPhongMaterial est moins gourmand en ressources
+                color: 0x6366f1,
+                shininess: 70,
+                emissive: 0x6366f1,
+                emissiveIntensity: 0.2
+            });
             const mainSphere = new THREE.Mesh(mainGeometry, mainMaterial);
             virusGroup.add(mainSphere);
             
-            // Matériau amélioré pour les pics
+            // Ajouter moins de pics pour de meilleures performances
+            const spikeGeometry = new THREE.ConeGeometry(0.15, 0.6, 8); // Nombre de polygones réduit
             const spikeMaterial = new THREE.MeshPhongMaterial({
                 color: 0xec4899,
-                shininess: 80,
+                shininess: 50,
                 emissive: 0xec4899,
-                emissiveIntensity: 0.3,
-                specular: 0xffffff
+                emissiveIntensity: 0.3
             });
             
-            // Ajouter des pics de protéine - avec variations
-            for (let i = 0; i < spikeCount; i++) {
-                const spikeHeight = 0.4 + Math.random() * 0.4;
-                const spikeWidth = 0.1 + Math.random() * 0.1;
-                
-                // Utiliser des cônes avec une base plus détaillée pour les pics
-                const spikeGeometry = new THREE.ConeGeometry(spikeWidth, spikeHeight, spikeDetail);
+            // Ajouter des pics de protéine - en nombre réduit
+            for (let i = 0; i < 20; i++) {
                 const spike = new THREE.Mesh(spikeGeometry, spikeMaterial);
                 
-                // Distribution sur la sphère
-                const phi = Math.acos(-1 + (2 * i) / spikeCount);
-                const theta = Math.sqrt(spikeCount * Math.PI) * phi;
+                const phi = Math.acos(-1 + (2 * i) / 20);
+                const theta = Math.sqrt(20 * Math.PI) * phi;
                 
-                // Position sur la sphère
                 spike.position.setFromSphericalCoords(1.2, phi, theta);
-                
-                // Orienter le pic vers l'extérieur
                 spike.lookAt(spike.position.clone().multiplyScalar(2));
                 
-                // Variation de taille
-                const scale = 0.7 + Math.random() * 0.6;
+                const scale = 0.7 + Math.random() * 0.5;
                 spike.scale.set(scale, scale, scale);
                 
-                // Ajouter au groupe du virus
                 virusGroup.add(spike);
-                
-                // Ajouter un petit effet de lueur aux pics (petite sphère à la base)
-                if (!isLowPower && i % 3 === 0) {
-                    const glowGeometry = new THREE.SphereGeometry(spikeWidth * 1.5, 8, 8);
-                    const glowMaterial = new THREE.MeshBasicMaterial({
-                        color: 0xec4899,
-                        transparent: true,
-                        opacity: 0.4
-                    });
-                    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-                    glow.position.copy(spike.position);
-                    glow.scale.set(1, 1, 1);
-                    virusGroup.add(glow);
-                }
-            }
-            
-            // Ajouter de petites particules orbitant autour du virus
-            if (!isLowPower) {
-                const particleGeometry = new THREE.SphereGeometry(0.08, 8, 8);
-                const particleMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x22d3ee,
-                    transparent: true,
-                    opacity: 0.7
-                });
-                
-                // Créer plusieurs orbites de particules
-                for (let i = 0; i < 3; i++) {
-                    const orbitRadius = 2 + i * 0.5;
-                    const particleCount = 8 + i * 2;
-                    const orbitGroup = new THREE.Group();
-                    
-                    // Rotation aléatoire pour chaque orbite
-                    orbitGroup.rotation.x = Math.random() * Math.PI;
-                    orbitGroup.rotation.y = Math.random() * Math.PI;
-                    
-                    for (let j = 0; j < particleCount; j++) {
-                        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-                        const angle = (j / particleCount) * Math.PI * 2;
-                        
-                        particle.position.x = Math.cos(angle) * orbitRadius;
-                        particle.position.z = Math.sin(angle) * orbitRadius;
-                        
-                        // Propriété pour l'animation
-                        particle.userData = {
-                            angle: angle,
-                            radius: orbitRadius,
-                            speed: 0.01 + Math.random() * 0.01,
-                            phase: Math.random() * Math.PI * 2
-                        };
-                        
-                        orbitGroup.add(particle);
-                    }
-                    
-                    virusGroup.add(orbitGroup);
-                }
             }
             
             // Boucle d'animation
             let frameCount = 0;
             let animationFrameId;
-            let lastTime = 0;
             
-            // Utiliser requestAnimationFrame avec contrôle des FPS pour mobile
-            const animate = (time) => {
+            const animate = () => {
                 animationFrameId = requestAnimationFrame(animate);
                 
-                // Limiter les FPS sur les appareils mobiles
-                if (isLowPower) {
-                    if (time - lastTime < 40) { // ~25 FPS limit
-                        return;
-                    }
-                    lastTime = time;
-                }
+                frameCount += 0.01;
                 
-                frameCount += isLowPower ? 0.005 : 0.01;
-                
-                // Animation améliorée du virus
+                // Animation simplifiée
                 virusGroup.rotation.y = frameCount * 0.3;
                 virusGroup.rotation.x = Math.sin(frameCount * 0.1) * 0.1;
-                
-                // Effet de "respiration" pour la sphère principale
-                const pulseScale = 1 + Math.sin(frameCount * 0.5) * 0.03;
-                mainSphere.scale.set(pulseScale, pulseScale, pulseScale);
-                
-                // Animer les particules orbitant
-                if (!isLowPower) {
-                    virusGroup.children.forEach(child => {
-                        if (child.type === "Group") {
-                            // C'est un groupe de particules en orbite
-                            child.rotation.y += 0.005;
-                            
-                            child.children.forEach(particle => {
-                                if (particle.userData && particle.userData.angle !== undefined) {
-                                    // Mettre à jour la position de la particule sur son orbite
-                                    particle.userData.angle += particle.userData.speed;
-                                    particle.position.x = Math.cos(particle.userData.angle) * particle.userData.radius;
-                                    particle.position.z = Math.sin(particle.userData.angle) * particle.userData.radius;
-                                    
-                                    // Effet de pulsation
-                                    const pulseScale = 1 + Math.sin(frameCount * 0.5 + particle.userData.phase) * 0.2;
-                                    particle.scale.set(pulseScale, pulseScale, pulseScale);
-                                }
-                            });
-                        }
-                    });
-                }
                 
                 renderer.render(scene, camera);
             };
@@ -2194,106 +1314,43 @@
             // Démarrage contrôlé de l'animation
             animate();
             
-            // Gestion du redimensionnement - debounced pour performance
-            let resizeTimeout;
+            // Gestion du redimensionnement - version simplifiée
             const handleResize = () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    const width = container.clientWidth;
-                    const height = container.clientHeight;
-                    
-                    camera.aspect = width / height;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(width, height);
-                }, 250);
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
             };
             
             window.addEventListener('resize', handleResize);
             
-            // Fonction de nettoyage
+            // Fonction de nettoyage pour améliorer les performances lorsque le modèle n'est pas visible
             const cleanup = () => {
                 cancelAnimationFrame(animationFrameId);
                 window.removeEventListener('resize', handleResize);
                 
                 // Libérer les ressources
-                scene.traverse(object => {
-                    if (object.geometry) object.geometry.dispose();
-                    if (object.material) {
-                        if (Array.isArray(object.material)) {
-                            object.material.forEach(material => material.dispose());
-                        } else {
-                            object.material.dispose();
-                        }
-                    }
-                });
-                
+                mainGeometry.dispose();
+                mainMaterial.dispose();
+                spikeGeometry.dispose();
+                spikeMaterial.dispose();
                 renderer.dispose();
             };
             
             return { animate, cleanup };
         }
         
-        // ScrollTrigger pour les animations lors du défilement
-        function initScrollAnimations() {
-            if (prefersReducedMotion) {
-                // Si l'utilisateur préfère réduire les animations, on affiche tout directement
-                document.querySelectorAll('.section-title, .section-subtitle, .info-card, .treatment-card').forEach(
-                    el => el.classList.add('reveal')
-                );
-                return;
-            }
-            
-            // Observer pour les titres de section
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('reveal');
-                    }
-                });
-            }, { threshold: 0.1 });
-            
-            // Observer les éléments
-            sectionTitles.forEach(title => observer.observe(title));
-            sectionSubtitles.forEach(subtitle => observer.observe(subtitle));
-            infoCards.forEach(card => observer.observe(card));
-            treatmentCards.forEach(card => observer.observe(card));
-            
-            // Animation de l'en-tête lors du défilement
-            let lastScrollY = window.scrollY;
-            
-            window.addEventListener('scroll', () => {
-                const currentScrollY = window.scrollY;
-                
-                // Ajouter la classe 'scrolled' quand on défile vers le bas
-                if (currentScrollY > 50) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
-                
-                // Masquer l'en-tête quand on défile vers le bas et l'afficher quand on défile vers le haut
-                if (currentScrollY > lastScrollY && currentScrollY > 200) {
-                    header.classList.add('hidden');
-                } else {
-                    header.classList.remove('hidden');
-                }
-                
-                lastScrollY = currentScrollY;
-            });
-        }
-        
         // Gestion du chargement initial
         window.addEventListener('load', () => {
-            // Masquer l'écran de chargement avec délai pour voir l'animation
+            // Masquer l'écran de chargement
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
-            }, 1500);
+            }, 800); // Court délai pour une transition plus fluide
             
-            // Initialiser le modèle 3D amélioré
-            const virusModel = initEnhancedVirusModel();
-            
-            // Initialiser les animations de défilement
-            initScrollAnimations();
+            // Initialiser le modèle 3D
+            const virusModel = initVirusModel();
             
             // Gestion de la disparition de l'écran d'accueil
             function hideSplashScreen() {
@@ -2327,6 +1384,8 @@
             window.addEventListener('keydown', handleKeyDown);
             scrollHint.addEventListener('click', hideSplashScreen);
             
+
+            
             // Gérer le bouton de retour en haut
             window.addEventListener('scroll', function() {
                 if (window.scrollY > 500) {
@@ -2341,31 +1400,6 @@
                     top: 0,
                     behavior: 'smooth'
                 });
-            });
-            
-            // Détecter si le site est chargé hors de l'écran de démarrage (rafraîchissement à mi-page)
-            if (window.scrollY > 0) {
-                hideSplashScreen();
-            }
-        });
-        
-        // Navigation fluide pour les liens internes
-        document.querySelectorAll('a[href^="#"]:not(.mobile-link)').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    const headerHeight = document.querySelector('header').offsetHeight;
-                    const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
-                    
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
             });
         });
     });
